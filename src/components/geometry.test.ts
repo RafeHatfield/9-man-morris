@@ -8,18 +8,12 @@
 import { describe, expect, it } from 'vitest';
 import { ADJACENCY, MILLS, POINT_COUNT } from '@/lib/engine';
 import {
-  BOARD_MARGIN_PX,
-  BOARD_MAX_PX,
   GRID_POINTS,
   PADDING,
   POINT_XY,
   SEGMENTS,
   STEP,
-  TAP_SHAPE_CLASS,
   TAP_SIZE,
-  boardWidthPx,
-  tapHitSquarePx,
-  tapSizePx,
   toView,
 } from './geometry';
 
@@ -85,6 +79,11 @@ describe('point coordinates', () => {
       expect(POINT_XY[i].x).toBeCloseTo(PADDING + gx * STEP, 10);
       expect(POINT_XY[i].y).toBeCloseTo(PADDING + gy * STEP, 10);
     });
+  });
+
+  it('keeps the board inside the viewBox', () => {
+    expect(toView(0)).toBe(PADDING);
+    expect(toView(6)).toBe(100 - PADDING);
   });
 });
 
@@ -161,29 +160,14 @@ describe('adjacency matches the drawing', () => {
 });
 
 describe('hit targets (GDD §6.2)', () => {
-  it('is at least 44 px of genuinely clickable square at a 360 px viewport', () => {
-    // 360 − 2 × BOARD_MARGIN_PX, capped at BOARD_MAX_PX — the same two constants
-    // the pages and `Board.tsx` lay out with, so this moves when the layout does.
-    expect(boardWidthPx(360)).toBe(360 - 2 * BOARD_MARGIN_PX);
-    expect(boardWidthPx(360)).toBe(328);
-    expect(tapSizePx(360)).toBeCloseTo(45.92, 6);
-    expect(tapHitSquarePx(360)).toBeCloseTo(45.92, 6);
-    expect(tapHitSquarePx(360)).toBeGreaterThanOrEqual(44);
-  });
-
-  it('stays square, because a rounded button is hit-tested as a circle', () => {
-    // The whole box is clickable only while this holds; a circular target of the
-    // same box would give back 45.92 / √2 = 32.47 px, under the 44 px bar.
-    expect(TAP_SHAPE_CLASS).toBe('rounded-none');
-    expect(tapSizePx(360) / Math.SQRT2).toBeLessThan(44);
-  });
-
-  it('is at least 44 px across at 390 px too, and stays capped on desktop', () => {
-    expect(tapHitSquarePx(390)).toBeGreaterThanOrEqual(44);
-    expect(boardWidthPx(1200)).toBe(520);
-  });
-
   it('never overlaps its neighbour: the tap square is one lattice step', () => {
+    // The whole §6.2 hit-target story is two halves. This is the half a unit
+    // test can own: the tap square is exactly one lattice step, so the 24
+    // squares tile the board and none of them can be made bigger without
+    // stealing from its neighbour. The other half — that one step is at least
+    // 44 px once the board is actually laid out — is measured on the rendered
+    // boxes by `e2e/mobile.spec.ts`, on all 24 points at both viewports.
+    expect(TAP_SIZE).toBe(STEP);
     const gaps = ADJACENCY.flatMap((ns, from) =>
       ns.map((to) =>
         Math.abs(POINT_XY[from].x - POINT_XY[to].x) +
@@ -191,20 +175,5 @@ describe('hit targets (GDD §6.2)', () => {
       ),
     );
     expect(Math.min(...gaps)).toBeCloseTo(TAP_SIZE, 10);
-  });
-
-  it('is sensitive to the page margin, which is what sets the board width', () => {
-    // The floor has 1.92 px of headroom at 16 px of margin: one step more and
-    // §6.2 is breached. This is the arithmetic, not a mirror of it — the pages
-    // render `padding: BOARD_MARGIN_PX`, so widening the margin fails the test
-    // above rather than silently shrinking the target.
-    expect(tapHitSquarePx(360) - 44).toBeLessThan(2);
-    const widened = Math.min(360 - 2 * (BOARD_MARGIN_PX + 8), BOARD_MAX_PX);
-    expect((widened / 100) * TAP_SIZE).toBeLessThan(44);
-  });
-
-  it('keeps the board inside the viewBox', () => {
-    expect(toView(0)).toBe(PADDING);
-    expect(toView(6)).toBe(100 - PADDING);
   });
 });

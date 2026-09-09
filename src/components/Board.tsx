@@ -143,7 +143,11 @@ export function Board({
             <g
               key={`piece-${i}`}
               transform={`translate(${POINT_XY[i].x} ${POINT_XY[i].y})`}
-              opacity={m.dimmed ? 0.35 : 1}
+              // 0.45, not lower: against the board's `#e8dcc8` plate this is
+              // where a dimmed piece clears WCAG 1.4.11's 3:1 floor for a
+              // graphical object that carries meaning. §6.2 asks for "dimmed",
+              // and it still reads plainly recessive next to a takeable piece.
+              opacity={m.dimmed ? 0.45 : 1}
             >
               <PieceShape player={m.occupant} r={PIECE_R} />
             </g>

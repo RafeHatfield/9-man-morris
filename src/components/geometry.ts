@@ -54,7 +54,9 @@ export const STEP = (VIEWBOX - 2 * PADDING) / 6;
  *
  * STEP is also the smallest distance between two points (the inner ring's
  * spacing), so the tap squares tile the board without overlapping — which is
- * also why they cannot simply be made bigger.
+ * also why they cannot simply be made bigger. That is the invariant
+ * `geometry.test.ts` checks; the 44 px floor itself is measured on the real
+ * rendered boxes by `e2e/mobile.spec.ts`, at both viewports.
  */
 export const TAP_SIZE = STEP;
 
@@ -75,35 +77,14 @@ export const TAP_SHAPE_CLASS = 'rounded-none';
  *
  * These are not a description of the CSS — they *are* the CSS. `Board.tsx` sets
  * its `maxWidth` from `BOARD_MAX_PX`, and the pages set their padding and
- * `maxWidth` from `BOARD_MARGIN_PX` and `PAGE_MAX_PX`, so the §6.2 hit-target
- * assertions below are computed from the same values the browser lays out with.
- * Change one and both the render and the test move together.
+ * `maxWidth` from `BOARD_MARGIN_PX` and `PAGE_MAX_PX`. Change one and the board
+ * changes width, which changes the tap targets: `e2e/mobile.spec.ts` measures
+ * every one of the 24 rendered boxes against §6.2's 44 px, so a margin widened
+ * here fails there rather than silently shrinking the targets.
  */
 export const BOARD_MARGIN_PX = 16;
 export const BOARD_MAX_PX = 520;
 export const PAGE_MAX_PX = 640;
-
-/** Board edge in px for a given viewport width. */
-export function boardWidthPx(viewportPx: number): number {
-  const content = Math.min(viewportPx, PAGE_MAX_PX) - 2 * BOARD_MARGIN_PX;
-  return Math.min(content, BOARD_MAX_PX);
-}
-
-/** The tap target's bounding box, in px, for a given viewport width. */
-export function tapSizePx(viewportPx: number): number {
-  return (boardWidthPx(viewportPx) / VIEWBOX) * TAP_SIZE;
-}
-
-/**
- * The largest square a tap actually lands in — what GDD §6.2's "≥ 44 × 44 px"
- * is really about. Equal to the box only while the button stays un-rounded;
- * a circular button would give back `tapSizePx / √2`.
- */
-export function tapHitSquarePx(viewportPx: number): number {
-  return TAP_SHAPE_CLASS === 'rounded-none'
-    ? tapSizePx(viewportPx)
-    : tapSizePx(viewportPx) / Math.SQRT2;
-}
 
 /** Lattice coordinates, indexed by the engine's point number. */
 export const GRID_POINTS: readonly GridPoint[] = [

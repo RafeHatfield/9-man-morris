@@ -37,7 +37,13 @@ export function StatusBar({
             {statusHeadline(state, you, waiting)}
           </span>
         </p>
-        <p className="mt-0.5 truncate text-xs text-black/60" data-testid="status-detail">
+        {/* Wraps rather than truncates. The longest line this produces —
+            "Mill! White removes a Black piece. · Spectating" — overflows a
+            360 px row by 22 px once the timers are beside it, and an ellipsis
+            there would hide either what a spectator is being told to expect or
+            the fact that they have no seat. The headline above stays truncated:
+            its longest string is "White wins — mill-out", which fits. */}
+        <p className="mt-0.5 text-xs text-black/60" data-testid="status-detail">
           {statusDetail(state, spectating)}
         </p>
       </div>

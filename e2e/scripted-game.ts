@@ -1,6 +1,7 @@
 /**
- * A scripted game that ends in a White mill-out win (GDD §4.6), as a list of
- * engine actions to be tapped out through the UI.
+ * Scripted positions, as lists of engine actions to be tapped out through the
+ * UI. The long one is a whole game ending in a White mill-out win (GDD §4.6);
+ * the short one at the bottom is a single removal position (§6.2).
  *
  * It is a fixed literal on purpose: the e2e is judged on what the *page* does,
  * so the expected outcome has to come from somewhere other than the engine the
@@ -65,3 +66,33 @@ export const REST: readonly Action[] = [
 
 /** The whole game, in order. */
 export const MILL_OUT_GAME: readonly Action[] = [...OPENING, ...REST];
+
+/**
+ * The other half of GDD §6.2's removal mode: "removable opponent pieces pulse;
+ * non-removable ones (protected by a mill) are dimmed". `MILL_OUT_GAME` never
+ * reaches it — Black holds no mill at any point where White is removing — so
+ * this short placement sequence exists to put that dimming on screen.
+ *
+ * Both sides build a mill during placement, Black's first. Black's mill on the
+ * top row costs White the piece at 16, and White's reply completes 20–21–22, so
+ * the sequence stops with White's removal pending over a Black position of four
+ * pieces: 0, 1 and 2 locked in the mill, and 4 loose. §4.5 protects a mill while
+ * its owner has a piece outside one, so exactly one piece pulses and three are
+ * dimmed. It does not need to reach a result, and does not.
+ */
+export const PROTECTED_REMOVAL: readonly Action[] = [
+  { type: 'place', point: 20 }, // W
+  { type: 'place', point: 0 }, //  B
+  { type: 'place', point: 21 }, // W
+  { type: 'place', point: 4 }, //  B — the loose piece, and the only one takeable
+  { type: 'place', point: 16 }, // W
+  { type: 'place', point: 1 }, //  B
+  { type: 'place', point: 12 }, // W
+  { type: 'place', point: 2 }, //  B — mill 0–1–2
+  { type: 'remove', point: 16 }, // B takes; White has no mill, so all are open
+  { type: 'place', point: 22 }, // W — mill 20–21–22; White's removal is pending
+];
+
+/** The Black pieces of `PROTECTED_REMOVAL`: the mill, then the loose one. */
+export const PROTECTED_MILL: readonly number[] = [0, 1, 2];
+export const PROTECTED_LOOSE = 4;

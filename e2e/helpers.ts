@@ -97,10 +97,7 @@ export async function expectBoardInert(page: Page): Promise<void> {
   ).toHaveCount(0);
 }
 
-/**
- * GDD §6.2: a control is at least 44 × 44 px as rendered. The board's points are
- * measured from `geometry.test.ts`; this is for the buttons a page adds round it.
- */
+/** GDD §6.2: at least 44 × 44 px, measured on the box the browser laid out. */
 export async function expectTapTarget(control: Locator): Promise<void> {
   await expect(control).toBeVisible();
   const box = await control.boundingBox();

@@ -1446,8 +1446,9 @@ describe.each(implementations)('%s', (_name, create) => {
         .catch((e: unknown) => e);
 
       expect(error).toBeInstanceOf(CorruptRoomError);
-      // The third `name`. It dies in `endpoints.test.ts` today, which is a pin
-      // this item cannot claim, so it gets one here beside its two siblings.
+      // The third `name`. The API layer renders `${error.name}: ${error.message}`
+      // into its operator log, so all three are checked here beside each other
+      // rather than relying on a test in another item to notice.
       expect((error as Error).name).toBe('CorruptRoomError');
       expect((error as Error).message).toBe(
         'Room ABCD2345 is not readable: game.result is neither a result nor null',

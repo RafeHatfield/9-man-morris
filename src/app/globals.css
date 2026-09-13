@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-board: #e8dcc8;
+  --color-line: #8a7a5f;
+  --color-page: #faf7f2;
+  --color-ink: #2a2622;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* Board feedback (GDD §6.3). Two keyframes, used by `Board.tsx`. */
+@keyframes morris-flash {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes morris-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* A mill flashes exactly once when it is formed. */
+.morris-flash {
+  animation: morris-flash 700ms ease-out 1 both;
+}
+
+/* Removable opponent pieces pulse while a removal is pending. */
+.morris-pulse {
+  animation: morris-pulse 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .morris-flash,
+  .morris-pulse {
+    animation: none;
+  }
+}
